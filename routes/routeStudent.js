@@ -7,17 +7,20 @@ const routeStudent = express.Router()
 routeStudent.post('/', async (req, res) => {
     try {
         const feedback = await Feedback.create({
+            studentName: req.body.studentName,
+            courseName: req.body.courseName,
             message: req.body.message,
             rating: req.body.rating,
         })
 
         res.status(201).json(feedback)
     } catch (error) {
-
-        return res.status(400).json({
-            message: 'Invalid feedback data',
-            errors: Object.values(error.errors).map((validationError) => validationError.message),
-        })
+        if (error instanceof mongoose.Error.ValidationError) {
+            return res.status(400).json({
+                message: 'Invalid feedback data',
+                errors: Object.values(error.errors).map((validationError) => validationError.message),
+            })
+        }
 
         res.status(500).json({ message: 'Failed to submit feedback' })
     }
